@@ -16,9 +16,24 @@ def test_healthz(client):
     assert body["app"] == "Aegis GRC"
 
 
+def test_landing_page_for_anonymous(client):
+    client.get("/logout")
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "Get started" in r.text
+    assert "Sign in" in r.text
+    assert "without the spreadsheets" in r.text   # hero copy
+
+
 def test_login_reaches_dashboard(client):
     r = login(client, "analyst")
     assert r.status_code == 200
+    assert "Dashboard" in r.text
+
+
+def test_maintenance_admin_can_sign_in(client):
+    # the always-present bootstrap maintenance account
+    r = login(client, "admin", "aegis123")
     assert "Dashboard" in r.text
 
 

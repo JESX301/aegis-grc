@@ -95,7 +95,11 @@ All via environment variables (see `.env.example`):
 | `AEGIS_DATA_DIR` | `./data` | where SQLite + data live |
 | `AEGIS_SEED_DEMO` | `true` | seed demo users + example assessment |
 | `AEGIS_DEMO_PASSWORD` | `aegis123` | demo account password |
+| `AEGIS_ADMIN_USERNAME` | `admin` | the always-present maintenance/superuser login |
+| `AEGIS_ADMIN_PASSWORD` | (generated) | maintenance password; if unset in a non-demo deploy, one is generated and printed to the logs on first boot |
 | `AEGIS_APP_NAME` | `Aegis GRC` | UI title |
+
+**Maintenance account.** A superuser (`admin` by default) is created on every startup if it doesn't exist, so any deployment always has a way in — even with demo seeding off. In production, set `AEGIS_ADMIN_PASSWORD`, or grab the auto-generated one from the first-boot logs and change it immediately via **My Account** (you'll be prompted).
 
 ---
 

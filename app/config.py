@@ -38,6 +38,13 @@ class Settings:
     # Default password for seeded demo accounts.
     DEMO_PASSWORD: str = os.getenv("AEGIS_DEMO_PASSWORD", "aegis123")
 
+    # Bootstrap maintenance/superuser account — created on every startup if absent,
+    # so a real (non-demo) deployment always has a way to sign in. Set the password
+    # via AEGIS_ADMIN_PASSWORD; if unset in a non-demo deploy, a strong random one is
+    # generated and logged once on first boot (and flagged to be changed).
+    ADMIN_USERNAME: str = os.getenv("AEGIS_ADMIN_USERNAME", "admin")
+    ADMIN_PASSWORD: str = os.getenv("AEGIS_ADMIN_PASSWORD", "")
+
     # Anthropic key — only used if you later enable the (stubbed) AI assist layer.
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 

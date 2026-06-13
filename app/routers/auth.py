@@ -34,6 +34,8 @@ def login(
     request.session["user_id"] = user.id
     audit(session, user, "login", "user", user.id)
     flash(request, f"Welcome back, {user.full_name or user.username}.", "success")
+    if user.must_change_password:
+        flash(request, "You're signed in with a temporary password — change it now in My Account.", "error")
     return RedirectResponse("/", status_code=303)
 
 

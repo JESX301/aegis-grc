@@ -44,6 +44,7 @@ class User(SQLModel, table=True):
     hashed_password: str = ""
     team: str = ""           # optional org unit / line-of-business scope
     is_active: bool = True
+    must_change_password: bool = False   # set for the auto-generated bootstrap admin
     created_at: datetime = Field(default_factory=utcnow)
 
 

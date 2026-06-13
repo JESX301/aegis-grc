@@ -188,6 +188,7 @@ def change_password(
         flash(request, "New password and confirmation do not match.", "error")
         return RedirectResponse("/account", status_code=303)
     user.hashed_password = hash_password(new)
+    user.must_change_password = False
     session.add(user)
     session.commit()
     audit(session, user, "change_password", "user", user.id)

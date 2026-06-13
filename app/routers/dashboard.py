@@ -13,7 +13,7 @@ from ..models import (
     Risk,
     WorkflowTemplate,
 )
-from ..security import require_user, roles_for
+from ..security import get_current_user, roles_for
 from ..templating import render
 
 router = APIRouter()
@@ -27,11 +27,14 @@ def _count(session: Session, model, *where) -> int:
 
 
 @router.get("/")
-def dashboard(
+def home(
     request: Request,
     session: Session = Depends(get_session),
-    user=Depends(require_user),
 ):
+    user = get_current_user(request, session)
+    if not user:
+        # Anonymous visitors get the public marketing landing page.
+        return render(request, "landing.html")
     roles = roles_for(session, user)
     stats = {
         "entities": _count(session, Entity),

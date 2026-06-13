@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    (function(){try{var t=localStorage.getItem('aegis-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>{{ app_name }} — governance, risk &amp; compliance</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js" defer></script>
+</head>
+<body>
+
+<header class="lp-hero">
+  <div class="lp-blob"></div>
+  <div class="wrap">
+    <nav class="lp-nav">
+      <a class="lp-logo" href="/">{{ app_name }}</a>
+      <div class="lp-links">
+        <a href="#features">Product</a>
+        <a href="#features">Solutions</a>
+        <a href="/login">Docs</a>
+      </div>
+      <div class="right">
+        <a class="signin" href="/login">Sign in</a>
+        <a class="btn primary" href="/login">Get started &rarr;</a>
+        <button class="btn small ghost theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+      </div>
+    </nav>
+
+    <div class="heroGrid">
+      <div>
+        <h1>Governance, risk &amp; compliance — <span class="hl">without the spreadsheets.</span></h1>
+        <p class="sub">Run RMF/ATO, third-party risk, incident response, and vulnerability management on one platform — with separation of duty baked into every approval and an audit trail you can prove.</p>
+        <div class="lp-cta">
+          <a class="btn primary" href="/login">Start free &rarr;</a>
+          <a class="btn ghost" href="/login">&#9654;&nbsp; Live demo</a>
+        </div>
+      </div>
+      <div class="shot" aria-hidden="true">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="tiles">
+          <div class="tile"><div class="n">128</div><div class="l">Entities</div></div>
+          <div class="tile"><div class="n">17</div><div class="l">Assessments</div></div>
+          <div class="tile"><div class="n">5</div><div class="l">Open findings</div></div>
+        </div>
+        <div class="l" style="font-size:12px;color:var(--muted);font-weight:600">Control posture</div>
+        <div class="spark"><span style="height:40%"></span><span style="height:65%"></span><span style="height:50%"></span><span style="height:82%"></span><span style="height:60%"></span><span style="height:92%"></span><span style="height:72%"></span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="lp-section" id="features">
+  <div class="wrap">
+    <div class="kicker">Why {{ app_name }}</div>
+    <h2>Compliance that runs itself</h2>
+    <p class="lead">A composable successor to the legacy GRC monolith — controls-as-code, automated evidence, and audit-ready trails across four pre-built workflow tracks.</p>
+    <div class="features">
+      <div class="feature"><div class="ic">&#9678;</div><h3>Separation of duty</h3><p>The submitter never approves their own work — enforced on every workflow gate and written to an append-only audit log.</p></div>
+      <div class="feature"><div class="ic">&#9783;</div><h3>Four tracks, one model</h3><p>Compliance/RMF, third-party risk, incident response, and vulnerability management share one canonical data model.</p></div>
+      <div class="feature"><div class="ic">&#8635;</div><h3>OSCAL-native</h3><p>Machine-readable SSP/SAR/POA&amp;M exports instead of locked-in proprietary report formats.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-section" style="padding-top:0">
+  <div class="wrap">
+    <div class="card" style="text-align:center;padding:2.4rem 1.5rem">
+      <h2 style="margin-top:0">Ready to retire the spreadsheets?</h2>
+      <p class="lead" style="margin:0 auto 1.2rem">Self-hostable, open, and yours to run. Sign in to the live demo and click through a real authorization workflow.</p>
+      <a class="btn primary" href="/login">Get started &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer class="lp-footer">
+  <div class="wrap">
+    <span>{{ app_name }} &middot; self-hostable governance, risk &amp; compliance</span>
+    <a href="/login">Sign in</a>
+  </div>
+</footer>
+
+</body>
+</html>

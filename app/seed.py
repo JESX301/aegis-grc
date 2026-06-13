@@ -288,17 +288,54 @@ def seed_example(session: Session, catalog: Catalog) -> None:
     session.commit()
 
 
+def seed_bootstrap_admin(session: Session) -> None:
+    """Guarantee a maintenance/superuser account exists so any deployment can sign in.
+
+    Password precedence: AEGIS_ADMIN_PASSWORD -> (demo) the demo password ->
+    a generated random one (logged once + flagged must-change). Idempotent.
+    """
+    import logging
+    import secrets
+
+    log = logging.getLogger("aegis")
+    username = settings.ADMIN_USERNAME
+    if session.exec(select(User).where(User.username == username)).first():
+        return
+
+    must_change = False
+    pw = settings.ADMIN_PASSWORD
+    if not pw:
+        if settings.SEED_DEMO:
+            pw = settings.DEMO_PASSWORD
+        else:
+            pw = secrets.token_urlsafe(12)
+            must_change = True
+            log.warning("%s", "=" * 64)
+            log.warning("Bootstrap maintenance account created: username=%r", username)
+            log.warning("Generated password: %s", pw)
+            log.warning("Sign in and change it now (My Account), or set AEGIS_ADMIN_PASSWORD.")
+            log.warning("%s", "=" * 64)
+
+    user = User(
+        username=username, full_name="Maintenance Admin", team="IT",
+        hashed_password=hash_password(pw), must_change_password=must_change,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    admin_role = _get_role(session, "admin")
+    session.add(UserRoleLink(user_id=user.id, role_id=admin_role.id))
+    session.commit()
+
+
 def seed_all() -> None:
     from .database import engine
 
     with Session(engine) as session:
         seed_roles(session)
+        catalog = seed_catalog(session)
+        seed_templates(session)
+        seed_bootstrap_admin(session)   # always — guarantees a maintenance login
         if settings.SEED_DEMO:
-            seed_users(session)
-            catalog = seed_catalog(session)
-            seed_templates(session)
+            seed_users(session)         # demo analyst/review/ciso/vendor/auditor
             seed_example(session, catalog)
-        else:
-            # still load the catalog + templates so the app is usable
-            catalog = seed_catalog(session)
-            seed_templates(session)
