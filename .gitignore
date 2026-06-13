@@ -2,7 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
-data/
+# Runtime data dir only (repo root) — NOT app/data/, which holds the seed catalog.
+/data/
 *.db
 *.sqlite3
 .env
