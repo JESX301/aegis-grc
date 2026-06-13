@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import mimetypes
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -27,6 +28,9 @@ from .templating import render
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("aegis")
+
+# Correct MIME for the self-hosted webfont (Python's default doesn't know .woff2).
+mimetypes.add_type("font/woff2", ".woff2")
 
 
 @asynccontextmanager

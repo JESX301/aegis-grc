@@ -5,6 +5,12 @@
    Font is loaded in the page <head> with a system fallback (works offline).
    ========================================================================== */
 
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/static/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('/static/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/static/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('/static/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 800; font-display: swap; src: url('/static/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); }
+
 :root, html[data-theme="light"] {
   --navy: #043873; --navy-2: #06294f; --blue: #4F9CF9; --yellow: #FFE492;
   --primary: #2f7fe0; --primary-d: #1f6fd0; --on-primary: #ffffff; --link: #1f6fd0;
