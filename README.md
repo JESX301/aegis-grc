@@ -1,7 +1,7 @@
 # Aegis GRC — a self-hostable GRC platform
 
-A small, modern, **self-hostable** Governance-Risk-Compliance platform that operationalizes the
-[`Modernized-Workflows/`](../Modernized-Workflows) playbooks. It is the working successor to the
+A small, modern, **self-hostable** Governance-Risk-Compliance platform that operationalizes a set of
+modernized compliance/risk consulting workflows. It is the working successor to the
 Agiliance RiskVision pattern: one canonical data model driven by a configurable **workflow engine that
 enforces submit → review → approve separation of duty**, pre-seeded with the four tracks from the playbooks.
 
@@ -150,4 +150,33 @@ add TLS + an IdP, add CSRF protection on state-changing forms, rate-limit login,
 matrix against your separation-of-duty policy. The append-only `AuditLog`/`Transition` tables give you the
 evidence trail; the rest is deployment hygiene.
 
-*Generated as a companion to the `Modernized-Workflows/` playbooks.*
+---
+
+## Testing & CI
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+ruff check .      # lint
+pytest            # in-process integration tests (FastAPI TestClient)
+```
+
+`tests/` drives the real ASGI app and asserts core behavior — including the
+**separation-of-duty** rule (a submitter can't approve their own work). `smoke_test.py`
+is the post-deploy check (drives a live server over HTTP). GitHub Actions
+(`.github/workflows/ci.yml`) runs lint + tests and builds the image on every push and PR.
+
+## Deploy to a VM (Docker + Caddy, automatic HTTPS)
+
+The production overlay adds a Caddy reverse proxy with auto-HTTPS; the app port is **not**
+published — only Caddy faces the internet.
+
+```bash
+# On an Ubuntu/Debian VM, as a sudo-capable non-root user, with an A record -> the VM IP:
+git clone https://github.com/JESX301/aegis-grc.git && cd aegis-grc
+cp .env.example .env      # set DOMAIN + a real AEGIS_SECRET_KEY; then: chmod 600 .env
+REPO_URL=https://github.com/JESX301/aegis-grc.git ./deploy.sh
+```
+
+`deploy.sh` installs Docker (first run), builds, and brings up app + Caddy via
+`docker-compose.yml` + `docker-compose.prod.yml`. Update later by re-running it
+(`git reset --hard` + rebuild); Caddy provisions the TLS cert on first request.

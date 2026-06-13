@@ -1,0 +1,44 @@
+# Production overlay: app + Caddy (automatic HTTPS). Use WITH the base compose:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Security properties:
+#  - The app has NO published host ports (`expose`, not `ports`) — it is reachable
+#    only by Caddy on the internal network. The only internet-facing service is Caddy.
+#  - Secrets come from .env (git-ignored). `:?` makes compose refuse to start if a
+#    required secret is unset, so you can't deploy without one.
+#  - Demo/seed data is OFF and a real secret key is required in production.
+
+services:
+  app:
+    build: .
+    image: ${APP_IMAGE:-aegis-grc:latest}
+    restart: unless-stopped
+    environment:
+      AEGIS_SECRET_KEY: "${AEGIS_SECRET_KEY:?set a real secret key in .env}"
+      AEGIS_DATA_DIR: "/data"
+      AEGIS_SEED_DEMO: "false"
+    volumes:
+      - app-data:/data
+    expose:
+      - "8000"          # internal only — NOT published to the host
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    environment:
+      DOMAIN: "${DOMAIN:?set your domain (e.g. app.example.com) in .env}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data      # persists issued certs across restarts
+      - caddy-config:/config
+
+volumes:
+  app-data:
+  caddy-data:
+  caddy-config:

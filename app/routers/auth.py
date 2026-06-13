@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 from ..database import get_session
 from ..models import User
-from ..security import audit, flash, get_current_user, roles_for, verify_password
+from ..security import audit, flash, get_current_user, verify_password
 from ..templating import render
 
 router = APIRouter()

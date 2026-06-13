@@ -40,4 +40,4 @@ def render(
         "badge": BADGE,
         **context,
     }
-    return templates.TemplateResponse(template_name, ctx, status_code=status_code)
+    return templates.TemplateResponse(request, template_name, ctx, status_code=status_code)

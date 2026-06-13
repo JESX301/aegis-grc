@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
-from typing import Iterable, Optional
+from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlmodel import Session, select

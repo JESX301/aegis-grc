@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+# Real-bug rules (pyflakes/pycodestyle/warnings) without style churn.
+select = ["E", "F", "W"]
+ignore = ["E501"]   # line length is not worth gating on here
