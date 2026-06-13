@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Reports &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+<p class="muted">Printable authorization summaries (the JasperReports replacement) plus OSCAL-flavoured JSON export.</p>
+{% if rows %}
+<table class="tbl">
+  <thead><tr><th>Assessment</th><th>Track</th><th>Entity</th><th>State</th><th></th></tr></thead>
+  <tbody>
+  {% for a in rows %}
+    <tr>
+      <td>{{ a.title }}</td>
+      <td>{{ templates[a.template_id].name if templates.get(a.template_id) else '—' }}</td>
+      <td>{% if a.entity_id and entities.get(a.entity_id) %}{{ entities[a.entity_id].name }}{% else %}—{% endif %}</td>
+      <td><span class="badge {{ badge.get(a.state,'muted') }}">{{ a.state }}</span></td>
+      <td>
+        <a class="btn small" href="/assessments/{{ a.id }}/report">Summary</a>
+        <a class="btn small ghost" href="/assessments/{{ a.id }}/export.json">JSON</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No assessments to report on.</p>{% endif %}
+{% endblock %}

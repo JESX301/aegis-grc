@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Sign in &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="loginwrap">
+  <div class="card login">
+    <h1>{{ app_name }}</h1>
+    <p class="muted">Governance, Risk &amp; Compliance &mdash; sign in to continue.</p>
+    <form method="post" action="/login">
+      <label>Username
+        <input name="username" autofocus value="{{ username or '' }}" required>
+      </label>
+      <label>Password
+        <input name="password" type="password" required>
+      </label>
+      <button class="btn primary" type="submit">Sign in</button>
+    </form>
+    <details class="demo">
+      <summary>Demo accounts</summary>
+      <ul>
+        <li><code>admin</code> — full admin</li>
+        <li><code>analyst</code> — performs assessments (submitter)</li>
+        <li><code>review</code> — reviewer + approver</li>
+        <li><code>ciso</code> — approver (authorizing official)</li>
+        <li><code>vendor</code> — external questionnaire only</li>
+        <li><code>auditor</code> — read-only</li>
+      </ul>
+      <p class="muted">All demo passwords are the configured demo password (default <code>aegis123</code>).</p>
+    </details>
+  </div>
+</div>
+{% endblock %}

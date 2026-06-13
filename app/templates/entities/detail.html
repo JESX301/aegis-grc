@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ entity.name }} &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h1>{{ entity.name }}</h1>
+  <span class="badge {{ badge.get(entity.criticality,'muted') }}">{{ entity.criticality }}</span>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Details</h2>
+    <table class="kv">
+      <tr><th>Type</th><td>{{ entity.type }}</td></tr>
+      <tr><th>Owner</th><td>{% if owner %}{{ owner.full_name or owner.username }}{% else %}—{% endif %}</td></tr>
+      <tr><th>Parent</th><td>{% if parent %}<a href="/entities/{{ parent.id }}">{{ parent.name }}</a>{% else %}—{% endif %}</td></tr>
+      <tr><th>Data classification</th><td>{{ entity.data_classification or '—' }}</td></tr>
+      <tr><th>C / I / A</th><td>{{ entity.confidentiality or '—' }} / {{ entity.integrity or '—' }} / {{ entity.availability or '—' }}</td></tr>
+      <tr><th>Tags</th><td>{{ entity.tags or '—' }}</td></tr>
+    </table>
+    {% if entity.description %}<p>{{ entity.description }}</p>{% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Sub-components</h2>
+    {% if children %}<ul>{% for c in children %}<li><a href="/entities/{{ c.id }}">{{ c.name }}</a> <span class="muted">({{ c.type }})</span></li>{% endfor %}</ul>
+    {% else %}<p class="muted">None linked.</p>{% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Assessments</h2>
+  {% if assessments %}
+  <table class="tbl"><thead><tr><th>Title</th><th>State</th></tr></thead><tbody>
+  {% for a in assessments %}<tr><td><a href="/assessments/{{ a.id }}">{{ a.title }}</a></td><td><span class="badge {{ badge.get(a.state,'muted') }}">{{ a.state }}</span></td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted">No assessments for this entity.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Findings</h2>
+  {% if findings %}
+  <table class="tbl"><thead><tr><th>Title</th><th>Severity</th><th>Status</th></tr></thead><tbody>
+  {% for f in findings %}<tr><td><a href="/findings/{{ f.id }}">{{ f.title }}</a></td><td><span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span></td><td>{{ f.status }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted">No findings.</p>{% endif %}
+</section>
+{% endblock %}

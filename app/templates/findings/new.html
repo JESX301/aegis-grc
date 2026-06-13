@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Raise finding &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead"><h1>Raise finding</h1><a class="btn ghost" href="/findings">Cancel</a></div>
+<form method="post" action="/findings" class="card form">
+  <label>Title<input name="title" required></label>
+  <label>Description<textarea name="description" rows="3"></textarea></label>
+  <div class="grid2">
+    <label>Entity
+      <select name="entity_id"><option value="">—</option>
+        {% for e in entities %}<option value="{{ e.id }}" {% if sel_entity and e.id|string==sel_entity %}selected{% endif %}>{{ e.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Linked assessment id<input name="assessment_id" value="{{ sel_assessment or '' }}" placeholder="optional"></label>
+    <label>Severity
+      <select name="severity">{% for s in severities %}<option value="{{ s }}" {% if s=='Medium' %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+    </label>
+    <label>Source
+      <select name="source">{% for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+    </label>
+    <label>CVE<input name="cve" placeholder="CVE-2024-..."></label>
+    <label>CVSS<input name="cvss" placeholder="0.0 - 10.0"></label>
+    <label>EPSS<input name="epss" placeholder="0.0 - 1.0"></label>
+    <label class="checkbox"><input type="checkbox" name="kev" value="1"> On CISA KEV list</label>
+  </div>
+  <button class="btn primary" type="submit">Raise finding</button>
+</form>
+{% endblock %}

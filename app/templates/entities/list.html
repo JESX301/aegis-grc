@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Entities &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h1>Entities</h1>
+  {% if 'admin' in roles or 'analyst' in roles %}<a class="btn primary" href="/entities/new">+ New entity</a>{% endif %}
+</div>
+{% if entities %}
+<table class="tbl">
+  <thead><tr><th>Name</th><th>Type</th><th>Criticality</th><th>Classification</th><th>Owner</th></tr></thead>
+  <tbody>
+  {% for e in entities %}
+    <tr>
+      <td><a href="/entities/{{ e.id }}">{{ e.name }}</a></td>
+      <td>{{ e.type }}</td>
+      <td><span class="badge {{ badge.get(e.criticality,'muted') }}">{{ e.criticality }}</span></td>
+      <td>{{ e.data_classification or '—' }}</td>
+      <td>{% if e.owner_id and owners.get(e.owner_id) %}{{ owners[e.owner_id].full_name or owners[e.owner_id].username }}{% else %}—{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No entities yet. Create one to begin.</p>{% endif %}
+{% endblock %}

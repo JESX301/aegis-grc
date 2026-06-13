@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Control catalog &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Control catalogs</h1>
+<p class="muted">Controls-as-data. Swap in any OSCAL catalog (NIST 800-53, ISO 27002, CSF 2.0) — the workflow engine is catalog-agnostic.</p>
+{% for cid, blk in grouped.items() %}
+<section class="card">
+  <h2>{{ blk.catalog.name }} <span class="muted">({{ blk.count }} controls)</span></h2>
+  <p class="muted">{{ blk.catalog.source }}</p>
+  {% for family, controls in blk.families.items() %}
+  <h3 class="fam">{{ family }}</h3>
+  <table class="tbl">
+    <thead><tr><th>ID</th><th>Title</th><th>Baseline</th><th>Statement</th></tr></thead>
+    <tbody>
+    {% for c in controls %}
+      <tr>
+        <td><code>{{ c.control_id }}</code></td>
+        <td>{{ c.title }}</td>
+        <td>{% for b in c.baseline.split(',') %}<span class="chip">{{ b }}</span>{% endfor %}</td>
+        <td class="muted small">{{ c.statement }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+</section>
+{% endfor %}
+{% endblock %}

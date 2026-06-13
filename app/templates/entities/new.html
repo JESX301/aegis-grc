@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}New entity &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead"><h1>New entity</h1><a class="btn ghost" href="/entities">Cancel</a></div>
+<form method="post" action="/entities" class="card form">
+  <div class="grid2">
+    <label>Name<input name="name" required></label>
+    <label>Type
+      <select name="type">{% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}</select>
+    </label>
+    <label>Owner
+      <select name="owner_id"><option value="">—</option>
+        {% for u in users %}<option value="{{ u.id }}">{{ u.full_name or u.username }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Parent entity
+      <select name="parent_id"><option value="">— (none)</option>
+        {% for p in parents %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Criticality
+      <select name="criticality">{% for c in criticalities %}<option value="{{ c }}" {% if c=='Moderate' %}selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+    </label>
+    <label>Data classification<input name="data_classification" placeholder="PII / PHI / Public"></label>
+    <label>Confidentiality (FIPS-199)
+      <select name="confidentiality">{% for c in cia %}<option value="{{ c }}">{{ c or '—' }}</option>{% endfor %}</select>
+    </label>
+    <label>Integrity
+      <select name="integrity">{% for c in cia %}<option value="{{ c }}">{{ c or '—' }}</option>{% endfor %}</select>
+    </label>
+    <label>Availability
+      <select name="availability">{% for c in cia %}<option value="{{ c }}">{{ c or '—' }}</option>{% endfor %}</select>
+    </label>
+    <label>Tags<input name="tags" placeholder="comma,separated"></label>
+  </div>
+  <label>Description<textarea name="description" rows="3"></textarea></label>
+  <button class="btn primary" type="submit">Create entity</button>
+</form>
+{% endblock %}

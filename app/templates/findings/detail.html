@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ f.title }} &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>{{ f.title }}</h1>
+    <p class="muted">
+      <span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span>
+      <span class="badge {{ badge.get(f.status,'muted') }}">{{ f.status }}</span>
+      {% if f.kev %}<span class="badge crit">CISA KEV</span>{% endif %}
+      &middot; source: {{ f.source }}
+    </p>
+  </div>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Details</h2>
+    <table class="kv">
+      <tr><th>Entity</th><td>{% if entity %}<a href="/entities/{{ entity.id }}">{{ entity.name }}</a>{% else %}—{% endif %}</td></tr>
+      <tr><th>Assessment</th><td>{% if assessment %}<a href="/assessments/{{ assessment.id }}">{{ assessment.title }}</a>{% else %}—{% endif %}</td></tr>
+      <tr><th>Control</th><td>{% if control %}{{ control.control_id }} — {{ control.title }}{% else %}—{% endif %}</td></tr>
+      <tr><th>CVE</th><td>{{ f.cve or '—' }}</td></tr>
+      <tr><th>CVSS / EPSS</th><td>{{ f.cvss if f.cvss is not none else '—' }} / {{ f.epss if f.epss is not none else '—' }}</td></tr>
+    </table>
+    {% if f.description %}<p>{{ f.description }}</p>{% endif %}
+
+    <h3>Change status</h3>
+    <form method="post" action="/findings/{{ f.id }}/status" class="inlineform">
+      <select name="status">
+        <option value="open" {% if f.status=='open' %}selected{% endif %}>open</option>
+        <option value="closed" {% if f.status=='closed' %}selected{% endif %}>closed</option>
+        <option value="risk_accepted" {% if f.status=='risk_accepted' %}selected{% endif %}>risk_accepted (approver)</option>
+      </select>
+      <button class="btn small" type="submit">Update</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Remediation</h2>
+    {% if remediations %}
+    <ul>{% for r in remediations %}<li><strong>{{ r.title }}</strong> — <span class="badge {{ badge.get(r.state,'muted') }}">{{ r.state }}</span>{% if r.target_date %} <span class="muted">due {{ r.target_date }}</span>{% endif %}</li>{% endfor %}</ul>
+    {% else %}<p class="muted">No remediation plan yet.</p>{% endif %}
+    {% if 'analyst' in roles or 'reviewer' in roles or 'admin' in roles %}
+    <form method="post" action="/remediations" class="form">
+      <input type="hidden" name="finding_id" value="{{ f.id }}">
+      <label>Plan title<input name="title" required placeholder="e.g. Enforce MFA on admin accounts"></label>
+      <label>Steps<textarea name="steps" rows="2"></textarea></label>
+      <div class="grid2">
+        <label>Owner
+          <select name="owner_id"><option value="">—</option>{% for u in users.values() %}<option value="{{ u.id }}">{{ u.username }}</option>{% endfor %}</select>
+        </label>
+        <label>Target date<input name="target_date" type="date"></label>
+      </div>
+      <button class="btn" type="submit">Create remediation</button>
+    </form>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Add to risk register</h2>
+  <form method="post" action="/risks" class="inlineform">
+    <input type="hidden" name="finding_id" value="{{ f.id }}">
+    <input name="title" required placeholder="Risk statement" value="Risk: {{ f.title }}">
+    <button class="btn small" type="submit">Add risk</button>
+  </form>
+  {% if risks %}<ul class="muted">{% for r in risks %}<li>{{ r.title }} — {{ r.treatment }} ({{ r.status }})</li>{% endfor %}</ul>{% endif %}
+</section>
+{% endblock %}

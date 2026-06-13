@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Assessments &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h1>Assessments</h1>
+  {% if 'admin' in roles or 'analyst' in roles %}<a class="btn primary" href="/assessments/new">+ New assessment</a>{% endif %}
+</div>
+{% if rows %}
+<table class="tbl">
+  <thead><tr><th>Title</th><th>Track</th><th>Entity</th><th>Current stage</th><th>State</th></tr></thead>
+  <tbody>
+  {% for a in rows %}
+    <tr>
+      <td><a href="/assessments/{{ a.id }}">{{ a.title }}</a></td>
+      <td>{{ templates[a.template_id].name if templates.get(a.template_id) else '—' }}</td>
+      <td>{% if a.entity_id and entities.get(a.entity_id) %}<a href="/entities/{{ a.entity_id }}">{{ entities[a.entity_id].name }}</a>{% else %}—{% endif %}</td>
+      <td>{{ stage_names.get(a.id,'—') }}{% if a.pending_review %} <span class="badge med">review</span>{% endif %}</td>
+      <td><span class="badge {{ badge.get(a.state,'muted') }}">{{ a.state }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No assessments yet.</p>{% endif %}
+{% endblock %}

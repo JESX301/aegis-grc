@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Users &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Users &amp; roles</h1>
+<p class="muted">RBAC directory. In production, provision these from your IdP via SCIM (Okta / Entra).</p>
+<table class="tbl">
+  <thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Team</th><th>Roles</th><th>Active</th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td><code>{{ u.username }}</code></td>
+      <td>{{ u.full_name }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.team or '—' }}</td>
+      <td>{% for r in user_roles.get(u.id, []) %}<span class="chip">{{ r }}</span>{% endfor %}</td>
+      <td>{{ 'yes' if u.is_active else 'no' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

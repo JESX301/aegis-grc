@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Findings &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h1>Findings</h1>
+  {% if 'analyst' in roles or 'reviewer' in roles or 'admin' in roles %}<a class="btn primary" href="/findings/new">+ Raise finding</a>{% endif %}
+</div>
+<div class="filters">
+  <a class="chip {% if not status %}on{% endif %}" href="/findings">all</a>
+  <a class="chip {% if status=='open' %}on{% endif %}" href="/findings?status=open">open</a>
+  <a class="chip {% if status=='closed' %}on{% endif %}" href="/findings?status=closed">closed</a>
+  <a class="chip {% if status=='risk_accepted' %}on{% endif %}" href="/findings?status=risk_accepted">risk accepted</a>
+</div>
+{% if findings %}
+<table class="tbl">
+  <thead><tr><th>Title</th><th>Entity</th><th>Severity</th><th>Source</th><th>CVE</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for f in findings %}
+    <tr>
+      <td><a href="/findings/{{ f.id }}">{{ f.title }}</a></td>
+      <td>{% if f.entity_id and entities.get(f.entity_id) %}{{ entities[f.entity_id].name }}{% else %}—{% endif %}</td>
+      <td><span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span>{% if f.kev %} <span class="badge crit">KEV</span>{% endif %}</td>
+      <td>{{ f.source }}</td>
+      <td>{{ f.cve or '—' }}</td>
+      <td><span class="badge {{ badge.get(f.status,'muted') }}">{{ f.status }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No findings match.</p>{% endif %}
+{% endblock %}

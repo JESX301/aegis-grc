@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dashboard &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="cards">
+  <div class="card stat"><span class="num">{{ stats.entities }}</span><span class="lbl">Entities</span></div>
+  <div class="card stat"><span class="num">{{ stats.assessments_active }}</span><span class="lbl">Active assessments</span></div>
+  <div class="card stat"><span class="num">{{ stats.findings_open }}</span><span class="lbl">Open findings</span></div>
+  <div class="card stat alert"><span class="num">{{ stats.findings_critical }}</span><span class="lbl">Critical open</span></div>
+  <div class="card stat"><span class="num">{{ stats.risks_open }}</span><span class="lbl">Open risks</span></div>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Awaiting your review / approval</h2>
+    {% if pending %}
+    <table class="tbl">
+      <thead><tr><th>Assessment</th><th>State</th><th></th></tr></thead>
+      <tbody>
+      {% for a in pending %}
+        <tr>
+          <td>{{ a.title }}</td>
+          <td><span class="badge med">pending review</span></td>
+          <td><a class="btn small" href="/assessments/{{ a.id }}">Open</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">Nothing is waiting for approval.</p>{% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Workflow tracks</h2>
+    <p class="muted">Pre-seeded, mapped from your modernized playbooks.</p>
+    <ul class="tracklist">
+      {% for t in templates %}
+      <li><strong>{{ t.name }}</strong><br><span class="muted">{{ t.description }}</span></li>
+      {% endfor %}
+    </ul>
+    <a class="btn primary" href="/assessments/new">Start an assessment</a>
+  </section>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Recent findings</h2>
+    {% if recent_findings %}
+    <table class="tbl">
+      <thead><tr><th>Title</th><th>Severity</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for f in recent_findings %}
+        <tr>
+          <td><a href="/findings/{{ f.id }}">{{ f.title }}</a></td>
+          <td><span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span></td>
+          <td><span class="badge {{ badge.get(f.status,'muted') }}">{{ f.status }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No findings yet.</p>{% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Recent activity</h2>
+    <ul class="audit">
+      {% for e in recent_audit %}
+      <li><span class="muted">{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          <strong>{{ e.actor_name }}</strong> {{ e.action }}
+          {{ e.object_type }}{% if e.object_id %} #{{ e.object_id }}{% endif %}
+          {% if e.detail %}<span class="muted">— {{ e.detail }}</span>{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

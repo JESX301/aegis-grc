@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}{{ a.title }} &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>{{ a.title }}</h1>
+    <p class="muted">
+      {{ template.name if template else '—' }}
+      {% if entity %} &middot; <a href="/entities/{{ entity.id }}">{{ entity.name }}</a>{% endif %}
+    </p>
+  </div>
+  <div>
+    <span class="badge {{ badge.get(a.state,'muted') }}">{{ a.state }}</span>
+    <a class="btn small" href="/assessments/{{ a.id }}/report">Report</a>
+    <a class="btn small ghost" href="/assessments/{{ a.id }}/export.json">JSON</a>
+  </div>
+</div>
+
+<!-- Workflow stepper -->
+<section class="card">
+  <h2>Workflow</h2>
+  <ol class="stepper">
+    {% for s in stages %}
+      {% set st = 'done' if loop.index0 < a.stage_order or a.state=='closed' else ('current' if loop.index0 == a.stage_order else 'todo') %}
+      <li class="step {{ st }}">
+        <span class="dot"></span>
+        <span class="sname">{{ s.name }}</span>
+        <span class="smeta muted">submit: {{ s.actor_role }} &rarr; approve: {{ s.approver_role }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+
+  {% if a.state == 'active' and stage %}
+    <div class="gatebox">
+      <h3>Current stage: {{ stage.name }}
+        {% if a.pending_review %}<span class="badge med">awaiting approval</span>{% endif %}
+      </h3>
+      <p class="muted">{{ stage.description }}</p>
+
+      {% if a.pending_review and submitter %}
+        <p class="muted">Submitted for review by <strong>{{ submitter.full_name or submitter.username }}</strong>
+        {% if a.submitted_at %}on {{ a.submitted_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}.</p>
+      {% endif %}
+
+      {% if can_submit %}
+      <form method="post" action="/assessments/{{ a.id }}/submit" class="inlineform">
+        <input name="comment" placeholder="Optional note for the reviewer">
+        <button class="btn primary" type="submit">Submit for review &rarr;</button>
+      </form>
+      <p class="muted small">As <code>{{ stage.actor_role }}</code> you may submit this stage. A different <code>{{ stage.approver_role }}</code> must approve it.</p>
+      {% endif %}
+
+      {% if can_approve %}
+      <form method="post" action="/assessments/{{ a.id }}/approve" class="inlineform">
+        <input name="comment" placeholder="Approval note (optional)">
+        <button class="btn primary" type="submit">Approve &amp; advance</button>
+      </form>
+      <form method="post" action="/assessments/{{ a.id }}/reject" class="inlineform">
+        <input name="comment" placeholder="Reason for return">
+        <button class="btn ghost" type="submit">Return for rework</button>
+      </form>
+      {% endif %}
+
+      {% if sod_block %}
+      <p class="flash error">Separation of duty: you submitted this stage, so you cannot approve it. Another approver must act.</p>
+      {% endif %}
+
+      {% if 'approver' in roles or 'admin' in roles %}
+      <form method="post" action="/assessments/{{ a.id }}/close" class="inlineform"
+            onsubmit="return confirm('Close this assessment?');">
+        <button class="btn small danger ghost" type="submit">Close assessment</button>
+      </form>
+      {% endif %}
+    </div>
+  {% elif a.state == 'closed' %}
+    <p class="flash success">This assessment is closed / authorized.</p>
+  {% endif %}
+</section>
+
+<!-- Control results -->
+{% if results %}
+<section class="card">
+  <h2>Control results <span class="muted">({{ results|length }})</span></h2>
+  {% if can_edit %}
+  <form method="post" action="/assessments/{{ a.id }}/results">
+    <table class="tbl results">
+      <thead><tr><th>Control</th><th>Status</th><th>Detail / evidence note</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+        {% set c = controls.get(r.control_id) %}
+        <tr>
+          <td><code>{{ c.control_id if c else '?' }}</code><br><span class="muted small">{{ c.title if c else '' }}</span></td>
+          <td>
+            <select name="status_{{ r.id }}">
+              {% for s in statuses %}<option value="{{ s }}" {% if s==r.status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            </select>
+          </td>
+          <td><input name="detail_{{ r.id }}" value="{{ r.detail }}" placeholder="implementation detail"></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <button class="btn primary" type="submit">Save control results</button>
+  </form>
+  {% else %}
+    <table class="tbl results">
+      <thead><tr><th>Control</th><th>Status</th><th>Detail</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+        {% set c = controls.get(r.control_id) %}
+        <tr>
+          <td><code>{{ c.control_id if c else '?' }}</code> <span class="muted small">{{ c.title if c else '' }}</span></td>
+          <td><span class="badge {{ badge.get(r.status,'muted') }}">{{ r.status }}</span></td>
+          <td class="muted">{{ r.detail or '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted small">Results are locked while awaiting review, or you don't hold the stage's actor role.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<div class="grid2">
+  <!-- Findings -->
+  <section class="card">
+    <h2>Findings</h2>
+    {% if findings %}
+    <table class="tbl"><thead><tr><th>Title</th><th>Severity</th><th>Status</th></tr></thead><tbody>
+    {% for f in findings %}<tr><td><a href="/findings/{{ f.id }}">{{ f.title }}</a></td><td><span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span></td><td>{{ f.status }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">No findings linked.</p>{% endif %}
+    {% if 'analyst' in roles or 'reviewer' in roles or 'admin' in roles %}
+    <a class="btn small" href="/findings/new?entity_id={{ a.entity_id or '' }}&assessment_id={{ a.id }}">+ Raise finding</a>
+    {% endif %}
+  </section>
+
+  <!-- Evidence -->
+  <section class="card">
+    <h2>Attach evidence</h2>
+    <form method="post" action="/evidence" class="form">
+      <input type="hidden" name="subject_type" value="assessment">
+      <input type="hidden" name="subject_id" value="{{ a.id }}">
+      <input type="hidden" name="redirect" value="/assessments/{{ a.id }}">
+      <label>Title<input name="title" required placeholder="e.g. MFA config export"></label>
+      <label>Type
+        <select name="type"><option>document</option><option>screenshot</option><option>config</option><option>scan</option><option>attestation</option></select>
+      </label>
+      <label>URI / link<input name="uri" placeholder="https:// or file path"></label>
+      <button class="btn" type="submit">Attach</button>
+    </form>
+  </section>
+</div>
+
+<!-- History -->
+<section class="card">
+  <h2>Gate history</h2>
+  {% if transitions %}
+  <table class="tbl">
+    <thead><tr><th>When</th><th>Action</th><th>By</th><th>Stages</th><th>Comment</th></tr></thead>
+    <tbody>
+    {% for t in transitions %}
+      <tr>
+        <td class="muted small">{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td><span class="badge {{ 'low' if t.action=='approve' else ('high' if t.action in ['reject','close'] else 'info') }}">{{ t.action }}</span></td>
+        <td>{% if users.get(t.actor_id) %}{{ users[t.actor_id].username }}{% else %}—{% endif %}</td>
+        <td class="muted small">{{ stages[t.from_stage].name if t.from_stage < stages|length else t.from_stage }} &rarr; {{ stages[t.to_stage].name if t.to_stage < stages|length else t.to_stage }}</td>
+        <td class="muted">{{ t.comment or '' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No gate actions yet.</p>{% endif %}
+</section>
+{% endblock %}

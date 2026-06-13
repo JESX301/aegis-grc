@@ -1,0 +1,38 @@
+services:
+  aegis:
+    build: .
+    image: aegis-grc:latest
+    container_name: aegis
+    ports:
+      - "8000:8000"
+    environment:
+      # CHANGE THIS for any non-local deployment (any long random string).
+      AEGIS_SECRET_KEY: "${AEGIS_SECRET_KEY:-dev-insecure-change-me-please-0123456789abcdef}"
+      AEGIS_DATA_DIR: "/data"
+      AEGIS_SEED_DEMO: "${AEGIS_SEED_DEMO:-true}"
+      AEGIS_DEMO_PASSWORD: "${AEGIS_DEMO_PASSWORD:-aegis123}"
+      # To use PostgreSQL instead of SQLite, start with `--profile postgres`
+      # and uncomment the next line + the depends_on block below:
+      # DATABASE_URL: "postgresql+psycopg://aegis:aegis@db:5432/aegis"
+    volumes:
+      - aegis-data:/data
+    restart: unless-stopped
+    # depends_on:
+    #   - db
+
+  # Optional PostgreSQL backend (cloud-style). Enable with: docker compose --profile postgres up
+  db:
+    image: postgres:16
+    profiles: ["postgres"]
+    container_name: aegis-db
+    environment:
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: aegis
+      POSTGRES_DB: aegis
+    volumes:
+      - aegis-pg:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  aegis-data:
+  aegis-pg:

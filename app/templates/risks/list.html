@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Risk register &middot; {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Risk register</h1>
+
+<section class="card">
+  <h2>Add risk</h2>
+  <form method="post" action="/risks" class="form">
+    <label>Risk statement<input name="title" required></label>
+    <div class="grid2">
+      <label>Likelihood<select name="likelihood">{% for l in levels %}<option {% if l=='Medium' %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></label>
+      <label>Impact<select name="impact">{% for l in levels %}<option {% if l=='Medium' %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></label>
+      <label>Treatment<select name="treatment">{% for t in treatments %}<option>{{ t }}</option>{% endfor %}</select></label>
+      <label>Owner<select name="owner_id"><option value="">—</option>{% for u in users.values() %}<option value="{{ u.id }}">{{ u.username }}</option>{% endfor %}</select></label>
+    </div>
+    <button class="btn primary" type="submit">Add to register</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Risks</h2>
+  {% if risks %}
+  <table class="tbl">
+    <thead><tr><th>Statement</th><th>Likelihood</th><th>Impact</th><th>Treatment</th><th>Owner</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for r in risks %}
+      <tr>
+        <td>{{ r.title }}{% if r.finding_id and findings.get(r.finding_id) %} <a class="muted small" href="/findings/{{ r.finding_id }}">(finding)</a>{% endif %}</td>
+        <td><span class="badge {{ badge.get(r.likelihood,'muted') }}">{{ r.likelihood }}</span></td>
+        <td><span class="badge {{ badge.get(r.impact,'muted') }}">{{ r.impact }}</span></td>
+        <td>{{ r.treatment }}</td>
+        <td>{% if users.get(r.owner_id) %}{{ users[r.owner_id].username }}{% else %}—{% endif %}</td>
+        <td>{{ r.status }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No risks recorded.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Remediation plans</h2>
+  {% if remediations %}
+  <table class="tbl">
+    <thead><tr><th>Title</th><th>Finding</th><th>Owner</th><th>Target</th><th>State</th></tr></thead>
+    <tbody>
+    {% for r in remediations %}
+      <tr>
+        <td>{{ r.title }}</td>
+        <td>{% if r.finding_id %}<a href="/findings/{{ r.finding_id }}">#{{ r.finding_id }}</a>{% else %}—{% endif %}</td>
+        <td>{% if users.get(r.owner_id) %}{{ users[r.owner_id].username }}{% else %}—{% endif %}</td>
+        <td>{{ r.target_date or '—' }}</td>
+        <td><span class="badge {{ badge.get(r.state,'muted') }}">{{ r.state }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No remediation plans.</p>{% endif %}
+</section>
+{% endblock %}
