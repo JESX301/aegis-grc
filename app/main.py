@@ -11,6 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from .config import BASE_DIR, settings
 from .database import init_db
 from .routers import (
+    account,
     admin,
     assessments,
     auth,
@@ -45,6 +46,7 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
+app.include_router(account.router)
 app.include_router(entities.router)
 app.include_router(catalog.router)
 app.include_router(assessments.router)

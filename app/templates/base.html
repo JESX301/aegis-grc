@@ -4,7 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <script>
+    // Apply saved/OS theme before paint to avoid a flash of the wrong theme.
+    (function(){try{var t=localStorage.getItem('aegis-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+  </script>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js" defer></script>
 </head>
 <body>
 <header class="topbar">
@@ -22,12 +27,16 @@
     {% if 'admin' in roles %}<a href="/admin/users">Users</a>{% endif %}
   </nav>
   <div class="userbox">
-    <span class="uname">{{ user.full_name or user.username }}</span>
+    <button class="btn small ghost theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+    <a class="uname" href="/account" title="My account">{{ user.full_name or user.username }}</a>
     {% for r in roles %}<span class="chip">{{ r }}</span>{% endfor %}
     <a class="btn small ghost" href="/logout">Sign out</a>
   </div>
   {% else %}
-  <nav class="mainnav"><a href="/login">Sign in</a></nav>
+  <nav class="mainnav">
+    <a href="/login">Sign in</a>
+    <button class="btn small ghost theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+  </nav>
   {% endif %}
 </header>
 <main class="wrap">

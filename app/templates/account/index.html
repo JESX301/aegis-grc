@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}My Account &middot; {{ app_name }}{% endblock %}
+
+{% macro queue(title, rows, empty='Nothing awaiting you here.') %}
+<section class="card">
+  <h2>{{ title }} <span class="muted">({{ rows|length }})</span></h2>
+  {% if rows %}
+  <table class="tbl">
+    <thead><tr><th>Assessment</th><th>Track</th><th>Stage</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><a href="/assessments/{{ r.a.id }}">{{ r.a.title }}</a>{% if r.entity %} <span class="muted small">· {{ r.entity }}</span>{% endif %}</td>
+        <td class="muted small">{{ r.track }}</td>
+        <td><span class="badge info">{{ r.stage }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ empty }}</p>{% endif %}
+</section>
+{% endmacro %}
+
+{% block content %}
+<div class="pagehead">
+  <h1>My Account</h1>
+  <div>{% for r in roles %}<span class="chip">{{ r }}</span>{% endfor %}</div>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Profile</h2>
+    <table class="kv">
+      <tr><th>Username</th><td><code>{{ user.username }}</code></td></tr>
+      <tr><th>Name</th><td>{{ user.full_name or '—' }}</td></tr>
+      <tr><th>Email</th><td>{{ user.email or '—' }}</td></tr>
+      <tr><th>Team</th><td>{{ user.team or '—' }}</td></tr>
+      <tr><th>Roles</th><td>{% for r in roles %}<span class="chip">{{ r }}</span>{% endfor %}</td></tr>
+      <tr><th>Member since</th><td>{{ user.created_at.strftime('%Y-%m-%d') }}</td></tr>
+      <tr><th>Last login</th><td>{% if last_login %}{{ last_login.created_at.strftime('%Y-%m-%d %H:%M') }}{% else %}—{% endif %}</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Account settings</h2>
+    <form method="post" action="/account/profile" class="form">
+      <label>Full name<input name="full_name" value="{{ user.full_name }}"></label>
+      <label>Email<input name="email" type="email" value="{{ user.email }}"></label>
+      <button class="btn" type="submit">Save profile</button>
+    </form>
+    <h3>Change password</h3>
+    <form method="post" action="/account/password" class="form">
+      <label>Current password<input name="current" type="password" required></label>
+      <div class="grid2">
+        <label>New password<input name="new" type="password" required></label>
+        <label>Confirm new<input name="confirm" type="password" required></label>
+      </div>
+      <button class="btn" type="submit">Change password</button>
+    </form>
+  </section>
+</div>
+
+{# ---------------- admin ---------------- #}
+{% if 'admin' in roles %}
+<section class="card">
+  <h2>Organization snapshot</h2>
+  <div class="cards">
+    <div class="card stat"><span class="num">{{ admin_stats.users }}</span><span class="lbl">Users</span></div>
+    <div class="card stat"><span class="num">{{ admin_stats.entities }}</span><span class="lbl">Entities</span></div>
+    <div class="card stat"><span class="num">{{ admin_stats.active_assessments }}</span><span class="lbl">Active assessments</span></div>
+    <div class="card stat alert"><span class="num">{{ admin_stats.open_findings }}</span><span class="lbl">Open findings</span></div>
+  </div>
+  <a class="btn" href="/admin/users">Manage users &amp; roles</a>
+  <a class="btn ghost" href="/admin/audit">Audit log</a>
+</section>
+{% endif %}
+
+{# ---------------- analyst ---------------- #}
+{% if 'analyst' in roles %}
+{{ queue('Awaiting my submission', awaiting_submission, 'No stages are waiting for you to submit.') }}
+<div class="grid2">
+  <section class="card">
+    <h2>My assessments <span class="muted">({{ my_assessments|length }})</span></h2>
+    {% if my_assessments %}
+    <table class="tbl"><thead><tr><th>Title</th><th>Stage</th><th>State</th></tr></thead><tbody>
+    {% for r in my_assessments %}<tr><td><a href="/assessments/{{ r.a.id }}">{{ r.a.title }}</a></td><td class="muted small">{{ r.stage }}</td><td><span class="badge {{ badge.get(r.a.state,'muted') }}">{{ r.a.state }}</span></td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">You haven't created any assessments.</p>{% endif %}
+    <a class="btn small primary" href="/assessments/new">+ New assessment</a>
+    <a class="btn small" href="/entities/new">+ New entity</a>
+    <a class="btn small ghost" href="/catalog">Control catalog</a>
+  </section>
+  <section class="card">
+    <h2>My findings <span class="muted">({{ my_findings|length }})</span></h2>
+    {% if my_findings %}
+    <table class="tbl"><thead><tr><th>Title</th><th>Severity</th><th>Status</th></tr></thead><tbody>
+    {% for f in my_findings %}<tr><td><a href="/findings/{{ f.id }}">{{ f.title }}</a></td><td><span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span></td><td>{{ f.status }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">You haven't raised any findings.</p>{% endif %}
+    <a class="btn small" href="/findings/new">+ Raise finding</a>
+  </section>
+</div>
+{% endif %}
+
+{# ---------------- reviewer ---------------- #}
+{% if 'reviewer' in roles %}
+{{ queue('Awaiting my review', review_queue, 'No submissions are waiting for your review.') }}
+{% endif %}
+
+{# ---------------- approver ---------------- #}
+{% if 'approver' in roles %}
+{{ queue('Awaiting authorization', authorize_queue, 'No items are awaiting your authorization.') }}
+<div class="grid2">
+  <section class="card">
+    <h2>Risk-acceptance queue <span class="muted">({{ open_findings|length }})</span></h2>
+    <p class="muted small">Open findings that may need a risk decision.</p>
+    {% if open_findings %}
+    <table class="tbl"><thead><tr><th>Finding</th><th>Severity</th></tr></thead><tbody>
+    {% for f in open_findings %}<tr><td><a href="/findings/{{ f.id }}">{{ f.title }}</a></td><td><span class="badge {{ badge.get(f.severity,'muted') }}">{{ f.severity }}</span></td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">No open findings.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Exception requests <span class="muted">({{ exception_requests|length }})</span></h2>
+    {% if exception_requests %}
+    <ul>{% for e in exception_requests %}<li>{{ e.control_ref or ('Finding #' ~ e.finding_id) }} — <span class="badge med">{{ e.state }}</span>{% if e.expiry %} <span class="muted">expires {{ e.expiry }}</span>{% endif %}</li>{% endfor %}</ul>
+    {% else %}<p class="muted">No pending exception requests.</p>{% endif %}
+  </section>
+</div>
+{% endif %}
+
+{# ---------------- vendor ---------------- #}
+{% if 'vendor' in roles %}
+{{ queue('My questionnaires', questionnaires, 'No questionnaires are awaiting your response.') }}
+<section class="card">
+  <h2>My evidence <span class="muted">({{ my_evidence|length }})</span></h2>
+  {% if my_evidence %}
+  <table class="tbl"><thead><tr><th>Title</th><th>Type</th></tr></thead><tbody>
+  {% for ev in my_evidence %}<tr><td>{{ ev.title }}</td><td>{{ ev.type }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted">You haven't uploaded any evidence yet.</p>{% endif %}
+  <p class="muted small">As a vendor you can see only your own questionnaires and evidence — no internal data.</p>
+</section>
+{% endif %}
+
+{# ---------------- read-only / auditor ---------------- #}
+{% if 'read_only' in roles %}
+<section class="card">
+  <h2>Auditor access (read-only)</h2>
+  <p class="muted">You have read access to the evidence trail and reports. No create or edit actions.</p>
+  <a class="btn" href="/admin/audit">Audit log</a>
+  <a class="btn ghost" href="/reports">Reports</a>
+  <a class="btn ghost" href="/assessments">Browse assessments</a>
+  <a class="btn ghost" href="/findings">Browse findings</a>
+</section>
+{% endif %}
+
+{# ---------------- recent decisions (reviewer/approver) ---------------- #}
+{% if recent_decisions is defined and recent_decisions %}
+<section class="card">
+  <h2>My recent decisions</h2>
+  <ul class="audit">
+    {% for e in recent_decisions %}
+    <li><span class="muted">{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        <span class="badge {{ 'low' if e.action=='approve' else 'high' }}">{{ e.action }}</span>
+        {{ e.object_type }}{% if e.object_id %} #{{ e.object_id }}{% endif %}
+        {% if e.detail %}<span class="muted">— {{ e.detail }}</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{# ---------------- recent activity (all) ---------------- #}
+<section class="card">
+  <h2>My recent activity</h2>
+  {% if my_audit %}
+  <ul class="audit">
+    {% for e in my_audit %}
+    <li><span class="muted">{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        {{ e.action }} {{ e.object_type }}{% if e.object_id %} #{{ e.object_id }}{% endif %}
+        {% if e.detail %}<span class="muted">— {{ e.detail }}</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No recent activity.</p>{% endif %}
+</section>
+{% endblock %}
